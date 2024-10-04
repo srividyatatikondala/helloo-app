@@ -9,4 +9,3 @@ cohere
 langchain
 pyttsx3
 SpeechRecognition
-pyaudio
