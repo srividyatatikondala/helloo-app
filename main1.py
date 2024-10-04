@@ -6,7 +6,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.preprocessing import MinMaxScaler
 import cohere
 from langchain.chains import LLMChain
-from langchain_core.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate
 import pyttsx3  # For text-to-speech
 import speech_recognition as sr  # For voice recognition
 import pyaudio  # Required for PyAudio
