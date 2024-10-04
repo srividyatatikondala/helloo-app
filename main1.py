@@ -6,7 +6,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.preprocessing import MinMaxScaler
 import cohere
 from langchain.chains import LLMChain
-from langchain_core.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate
 
 # Define a custom function to interact with Cohere
 def generate_text_with_cohere(prompt, cohere_client):
