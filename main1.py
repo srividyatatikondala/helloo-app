@@ -6,38 +6,19 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.preprocessing import MinMaxScaler
 import cohere
 from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
-import pyttsx3  # For text-to-speech
-import speech_recognition as sr  # For voice recognition
+from langchain_core.prompts import PromptTemplate
 
-# Initialize pyttsx3 engine for TTS
-engine = pyttsx3.init()
-
-# Function to convert text to speech
-def text_to_speech(text):
-    engine.say(text)
-    engine.runAndWait()
-
-# Initialize speech recognizer
-recognizer = sr.Recognizer()
-
-# Function to capture voice input
-def get_voice_input():
-    with sr.Microphone() as source:
-        recognizer.adjust_for_ambient_noise(source)
-        st.write("Please speak your question...")
-        audio = recognizer.record(source, duration=10)  # Record for 10 seconds
-        st.write("Processing...")
-        try:
-            question = recognizer.recognize_google(audio)
-            st.success(f"You asked: {question}")
-            return question
-        except sr.UnknownValueError:
-            st.error("Sorry, I could not understand the audio. Please try again.")
-            return None
-        except sr.RequestError as e:
-            st.error(f"Could not request results from Google Speech Recognition service; {e}")
-            return None
+# Define a custom function to interact with Cohere
+def generate_text_with_cohere(prompt, cohere_client):
+    response = cohere_client.generate(
+        model='command-xlarge-nightly',
+        prompt=prompt,
+        max_tokens=100,
+        temperature=0.75,
+        k=0,
+        stop_sequences=[]
+    )
+    return response.generations[0].text
 
 # Initialize Cohere API
 cohere_api_key = 'IDlfxdy11paDxht8zQKuLQZkR61dhaPRTwdNzkpF'
@@ -68,18 +49,6 @@ class CohereChain:
         prompt_text = self.prompt_template.format(context=context, question=question)
         return generate_text_with_cohere(prompt_text, self.cohere_client)
 
-# Define a custom function to interact with Cohere
-def generate_text_with_cohere(prompt, cohere_client):
-    response = cohere_client.generate(
-        model='command-xlarge-nightly',
-        prompt=prompt,
-        max_tokens=100,
-        temperature=0.75,
-        k=0,
-        stop_sequences=[]
-    )
-    return response.generations[0].text
-
 # Create the LangChain instance with the custom wrapper
 chain = CohereChain(co, prompt)
 
@@ -88,7 +57,7 @@ st.title("Agricultural Commodity Forecasting and Chatbot Integration")
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv('/home/srividya/Downloads/updated_daily_price - updated_daily_price.csv')
+    df = pd.read_csv('/home/murali/Downloads/commodity.csv')
     return df
 
 data = load_data()
@@ -106,6 +75,7 @@ if commodity_data.empty:
     st.error(f"No valid data available for {commodity}. Please select a different commodity.")
 else:
     target_column = 'Modal Price'
+
     commodity_data = commodity_data.dropna(subset=[target_column, 'Forecasted Price (INR/kg)'])
     
     if commodity_data.empty:
@@ -163,30 +133,12 @@ else:
     For any questions regarding specific commodities or forecasted prices, please ask below.
     """
 
-# Streamlit app
-st.title("Agricultural Commodity Forecasting and Chatbot Integration")
+    st.write("## Chat with the Assistant")
+    question = st.text_input("Ask the chatbot a question", "What would you like to know?")
 
-st.write("## Chat with the Assistant")
-
-# Add a button to allow voice input
-if st.button("Ask by Voice"):
-    question = get_voice_input()  # Get voice input
-    st.session_state.question = question  # Store the question in session state
-else:
-    question = st.session_state.get("question", "")  # Retrieve the voice question if available
-    question = st.text_input("Ask the chatbot a question", question)
-
-if st.button("Get Answer"):
-    if question:
-        response = chain.run(context=context, question=question)
-        st.write(f"Chatbot's Answer: {response}")
-
-        # Convert the response to speech
-        text_to_speech(response)
-    else:
-        st.error("Please ask a question.")
-
-# Load images where necessary
-# Uncomment and provide the path to your images
-# st.image("path/to/image1.png", caption="Image 1 caption")
-# st.image("path/to/image2.png", caption="Image 2 caption")
+    if st.button("Get Answer"):
+        if question:
+            response = chain.run(context=context, question=question)
+            st.write(f"Chatbot's Answer: {response}")
+        else:
+            st.error("Please ask a question.")
