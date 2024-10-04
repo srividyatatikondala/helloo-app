@@ -9,7 +9,6 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 import pyttsx3  # For text-to-speech
 import speech_recognition as sr  # For voice recognition
-import pyaudio  # Required for PyAudio
 
 # Initialize pyttsx3 engine for TTS
 engine = pyttsx3.init()
@@ -39,7 +38,6 @@ def get_voice_input():
         except sr.RequestError as e:
             st.error(f"Could not request results from Google Speech Recognition service; {e}")
             return None
-
 
 # Initialize Cohere API
 cohere_api_key = 'IDlfxdy11paDxht8zQKuLQZkR61dhaPRTwdNzkpF'
@@ -165,10 +163,8 @@ else:
     For any questions regarding specific commodities or forecasted prices, please ask below.
     """
 
-    # Streamlit app
+# Streamlit app
 st.title("Agricultural Commodity Forecasting and Chatbot Integration")
-
-# ... [rest of your existing code]
 
 st.write("## Chat with the Assistant")
 
