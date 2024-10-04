@@ -55,90 +55,90 @@ chain = CohereChain(co, prompt)
 # Streamlit app
 st.title("Agricultural Commodity Forecasting and Chatbot Integration")
 
-@st.cache_data
-def load_data():
-    df = pd.read_csv('/home/srividya/Downloads/updated_daily_price - updated_daily_price.csv')
-    return df
-
-data = load_data()
-
-st.write("## Agricultural Commodity Prices")
-st.dataframe(data)
-
-specific_commodities = data['Commodity'].unique().tolist()
-
-commodity = st.selectbox("Select a commodity to forecast", specific_commodities)
-
-commodity_data = data[data['Commodity'] == commodity]
-
-if commodity_data.empty:
-    st.error(f"No valid data available for {commodity}. Please select a different commodity.")
-else:
-    target_column = 'Modal Price'
-
-    commodity_data = commodity_data.dropna(subset=[target_column, 'Forecasted Price (INR/kg)'])
+# File uploader for CSV
+uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+if uploaded_file is not None:
+    data = pd.read_csv(uploaded_file)
     
+    st.write("## Agricultural Commodity Prices")
+    st.dataframe(data)
+
+    specific_commodities = data['Commodity'].unique().tolist()
+
+    commodity = st.selectbox("Select a commodity to forecast", specific_commodities)
+
+    commodity_data = data[data['Commodity'] == commodity]
+
     if commodity_data.empty:
-        st.error(f"No valid data available for {commodity} after cleaning. Please select a different commodity.")
+        st.error(f"No valid data available for {commodity}. Please select a different commodity.")
     else:
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        data_scaled = scaler.fit_transform(commodity_data[target_column].values.reshape(-1, 1))
+        target_column = 'Modal Price'
 
-        order = st.selectbox("Select ARIMA order (p, d, q)", [(1, 1, 1), (2, 1, 2), (1, 0, 1)])
-        model = ARIMA(data_scaled, order=order)
-        model_fit = model.fit()
+        commodity_data = commodity_data.dropna(subset=[target_column, 'Forecasted Price (INR/kg)'])
 
-        steps = st.slider("Number of steps to forecast into the future", 1, 100, 10)
-        forecast = model_fit.forecast(steps=steps)
-        forecast = scaler.inverse_transform(forecast.reshape(-1, 1))  # Inverse transform to original scale
-
-        original_prices = commodity_data[target_column].values
-        forecast_index = range(len(commodity_data), len(commodity_data) + steps)
-        forecast_series = pd.Series(forecast.flatten(), index=forecast_index)
-
-        st.write(f"## {commodity} - Original Prices")
-        fig, ax = plt.subplots()
-        ax.plot(commodity_data.index, original_prices, label='Original Prices', color='blue')
-        ax.set_xlabel("Index")
-        ax.set_ylabel(f"Price (INR/kg)")
-        ax.set_title(f'{commodity} - Original Prices')
-        ax.legend()
-        st.pyplot(fig)
-
-        st.write(f"## {commodity} - Forecasted Prices")
-        fig, ax = plt.subplots()
-        ax.plot(forecast_series.index, forecast_series, label='Forecasted Prices', color='red', linestyle='--')
-        ax.set_xlabel("Index")
-        ax.set_ylabel(f"Price (INR/kg)")
-        ax.set_title(f'{commodity} - Forecasted Prices')
-        ax.legend()
-        st.pyplot(fig)
-
-        st.write(f"## Forecasted Prices for Next {steps} Steps")
-        st.write(forecast)
-
-    # Enhanced chatbot context
-    context = f"""
-    The dataset includes agricultural commodity prices with the following columns:
-    - Commodity: The type of commodity (e.g., onion, potato)
-    - Modal Price: The price of the commodity (INR/kg)
-    - Forecasted Price (INR/kg): The predicted price for future periods
-
-    Current data context:
-    {data.head()}
-
-    Forecasting details:
-    For the selected commodity, the ARIMA model forecasts future prices. The parameters of the model and the forecasted results are displayed in the app.
-
-    For any questions regarding specific commodities or forecasted prices, please ask below.
-    """
-
-    st.write("## Chat with the Assistant")
-    question = st.text_input("Ask the chatbot a question", "What would you like to know?")
-
-    if st.button("Get Answer"):
-        if question:
-            response = chain.run(context=context, question=question)
-            st.write(f"Chatbot's Answer: {response}")
+        if commodity_data.empty:
+            st.error(f"No valid data available for {commodity} after cleaning. Please select a different commodity.")
         else:
-            st.error("Please ask a question.")
+            scaler = MinMaxScaler(feature_range=(0, 1))
+            data_scaled = scaler.fit_transform(commodity_data[target_column].values.reshape(-1, 1))
+
+            order = st.selectbox("Select ARIMA order (p, d, q)", [(1, 1, 1), (2, 1, 2), (1, 0, 1)])
+            model = ARIMA(data_scaled, order=order)
+            model_fit = model.fit()
+
+            steps = st.slider("Number of steps to forecast into the future", 1, 100, 10)
+            forecast = model_fit.forecast(steps=steps)
+            forecast = scaler.inverse_transform(forecast.reshape(-1, 1))  # Inverse transform to original scale
+
+            original_prices = commodity_data[target_column].values
+            forecast_index = range(len(commodity_data), len(commodity_data) + steps)
+            forecast_series = pd.Series(forecast.flatten(), index=forecast_index)
+
+            st.write(f"## {commodity} - Original Prices")
+            fig, ax = plt.subplots()
+            ax.plot(commodity_data.index, original_prices, label='Original Prices', color='blue')
+            ax.set_xlabel("Index")
+            ax.set_ylabel(f"Price (INR/kg)")
+            ax.set_title(f'{commodity} - Original Prices')
+            ax.legend()
+            st.pyplot(fig)
+
+            st.write(f"## {commodity} - Forecasted Prices")
+            fig, ax = plt.subplots()
+            ax.plot(forecast_series.index, forecast_series, label='Forecasted Prices', color='red', linestyle='--')
+            ax.set_xlabel("Index")
+            ax.set_ylabel(f"Price (INR/kg)")
+            ax.set_title(f'{commodity} - Forecasted Prices')
+            ax.legend()
+            st.pyplot(fig)
+
+            st.write(f"## Forecasted Prices for Next {steps} Steps")
+            st.write(forecast)
+
+        # Enhanced chatbot context
+        context = f"""
+        The dataset includes agricultural commodity prices with the following columns:
+        - Commodity: The type of commodity (e.g., onion, potato)
+        - Modal Price: The price of the commodity (INR/kg)
+        - Forecasted Price (INR/kg): The predicted price for future periods
+
+        Current data context:
+        {data.head()}
+
+        Forecasting details:
+        For the selected commodity, the ARIMA model forecasts future prices. The parameters of the model and the forecasted results are displayed in the app.
+
+        For any questions regarding specific commodities or forecasted prices, please ask below.
+        """
+
+        st.write("## Chat with the Assistant")
+        question = st.text_input("Ask the chatbot a question", "What would you like to know?")
+
+        if st.button("Get Answer"):
+            if question:
+                response = chain.run(context=context, question=question)
+                st.write(f"Chatbot's Answer: {response}")
+            else:
+                st.error("Please ask a question.")
+else:
+    st.warning("Please upload a CSV file to get started.")
