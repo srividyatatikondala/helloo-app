@@ -1,11 +1,11 @@
-
 streamlit
-pandas
 numpy
+aiohttp
+pandas
 matplotlib
+seaborn
 statsmodels
 scikit-learn
+pydantic<2.0.0
 cohere
 langchain
-pyttsx3
-SpeechRecognition
