@@ -1,0 +1,12 @@
+
+streamlit
+pandas
+numpy
+matplotlib
+statsmodels
+scikit-learn
+cohere
+langchain
+pyttsx3
+SpeechRecognition
+pyaudio
