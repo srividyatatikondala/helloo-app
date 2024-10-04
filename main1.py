@@ -57,7 +57,7 @@ st.title("Agricultural Commodity Forecasting and Chatbot Integration")
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv('/home/srividya/Downloads/updated_daily_price - updated_daily_price.csv'')
+    df = pd.read_csv('/home/srividya/Downloads/updated_daily_price - updated_daily_price.csv')
     return df
 
 data = load_data()
