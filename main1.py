@@ -1,4 +1,4 @@
-import streamlit as st
+9import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -57,7 +57,7 @@ st.title("Agricultural Commodity Forecasting and Chatbot Integration")
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv('/home/murali/Downloads/commodity.csv')
+    df = pd.read_csv('/home/srividya/Downloads/updated_daily_price - updated_daily_price.csv'')
     return df
 
 data = load_data()
